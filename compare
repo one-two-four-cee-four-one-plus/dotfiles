@@ -1,0 +1,16 @@
+compare() {
+    if [ ! -f $1 ]; then
+        echo ∄ $1
+        return 2
+    fi
+    if [ ! -f $2 ]; then
+        echo ∄ $2
+        return 2
+    fi
+    if [ ! -z "$(cmp -s $1 $2)" ]; then
+        echo $1 ≠ $2
+    fi
+}
+compare ~/.config/fish/config.fish ./config.fish
+compare ~/.tmux.conf dot-tmux.conf
+compare ~/.vimrc dot-vimrc
