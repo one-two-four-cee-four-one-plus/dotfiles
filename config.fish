@@ -84,6 +84,10 @@ function fish_prompt
             set col (set_color --bold f00)
             set text_status (explain_errno $last_status)
         end
+
+        if test -z $text_status
+            set text_status "?"
+        end
         
         printf " %s(%s%s:%s%s%s%s)%s" $grey (set_color 8b0000) $status_type $col $text_status $normal $grey $normal
     end
