@@ -1,0 +1,28 @@
+const { app, BrowserWindow } = require('electron');
+
+const createWindow = () =>{
+    win = new BrowserWindow({
+        center: true,
+        resizable: false,
+        fullscreen: true,
+        webPreferences:{
+            nodeIntegration: false,
+            show: false
+        }
+    });
+    win.maximize();
+    win.loadURL('http://127.0.0.1:8888');
+    let contents = win.webContents
+    contents.on('did-finish-load', function() {
+        contents.insertCSS('* { font-family: monofur !important; font-size: 17px;}');
+    });
+    win.once('ready-to-show',()=>{
+        win.show()
+    });
+
+    win.on('closed',()=>{
+        win = null;
+    });
+}
+
+app.on('ready', createWindow);

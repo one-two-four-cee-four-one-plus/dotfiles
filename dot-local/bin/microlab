@@ -1,0 +1,2 @@
+#!/bin/sh
+electron ~/.local/lib/micro-jupyter-lab

@@ -7,10 +7,12 @@ compare() {
         echo ∄ $2
         return 2
     fi
-    if [ ! -z "$(cmp -s $1 $2)" ]; then
+    if [ ! -z "$(cmp $1 $2)" ]; then
         echo $1 ≠ $2
     fi
 }
-compare ~/.config/fish/config.fish ./config.fish
+compare ~/.config/fish/config.fish config.fish
 compare ~/.tmux.conf dot-tmux.conf
 compare ~/.vimrc dot-vimrc
+compare ~/.local/bin/microlab dot-local/bin/microlab
+compare ~/.local/lib/micro-jupyter-lab dot-local/lib/micro-jupyter-lab
