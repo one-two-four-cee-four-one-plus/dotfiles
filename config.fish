@@ -72,7 +72,6 @@ function fish_prompt
     end
 
     if test $last_status -ne "0" && test $last_status -ne "141"
-        printf "s"
         set -l status_type
         set -l text_status
         set -l col

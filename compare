@@ -16,3 +16,5 @@ compare ~/.tmux.conf dot-tmux.conf
 compare ~/.vimrc dot-vimrc
 compare ~/.local/bin/microlab dot-local/bin/microlab
 compare ~/.local/lib/micro-jupyter-lab dot-local/lib/micro-jupyter-lab
+compare ~/.emacs.d/init.el init.el
+compare ~/.emacs.d/early-init.el early-init.el
