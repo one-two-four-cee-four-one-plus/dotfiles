@@ -112,3 +112,7 @@ function ipy
         env python$V -mIPython
     end
 end
+
+function umacs
+    emacs -q -nl -nsl --no-splash --eval "(menu-bar-mode -1)" $argv
+end
