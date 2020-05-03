@@ -19,6 +19,11 @@
 (require 'use-package)
 (setq use-package-always-ensure t)
 
+(use-package emacs
+  :bind
+  (("C-x -" . split-window-below)
+   ("C-x |" . split-window-right)))
+
 (use-package files
   :ensure nil
   :custom
@@ -117,6 +122,8 @@
   :ensure t)
 
 (use-package flx)
+
+(use-package undo-tree)
 
 (use-package hydra
   :bind (("C-h" . hydrant/body))

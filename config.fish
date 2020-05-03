@@ -3,7 +3,7 @@ end
 
 function explain_errno -a no
 
-    set -l errors EPERM ENOENT ESRCH EINTR EIO ENXIO E2BIG ENOEXEC EBADF \
+    set -l errors "EPERM|GENERIC" ENOENT ESRCH EINTR EIO ENXIO E2BIG ENOEXEC EBADF \
                   ECHILD EAGAIN ENOMEM EACCES EFAULT ENOTBLK EBUSY EEXIST \
                   EXDEV ENODEV ENOTDIR EISDIR EINVAL ENFILE EMFILE ENOTTY \
                   ETXTBSY EFBIG ENOSPC ESPIPE EROFS EMLINK EPIPE EDOM \
@@ -116,3 +116,5 @@ end
 function umacs
     emacs -q -nl -nsl --no-splash --eval "(menu-bar-mode -1)" $argv
 end
+
+set -gx PATH ~/.local/bin $PATH
