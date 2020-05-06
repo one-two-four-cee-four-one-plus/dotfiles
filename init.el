@@ -69,6 +69,18 @@
   (inhibit-splash-screen t))
 
 (menu-bar-mode -1)
+(when window-system
+  (tool-bar-mode -1)
+  (scroll-bar-mode -1)
+  (blink-cursor-mode 0)
+  (set-face-attribute 'default t 
+                      :family "monofur"
+                      :foundry "unknown"
+                      :slant 'normal
+                      :weight 'normal
+                      :height 100
+                      :width 'normal)
+  (add-to-list 'default-frame-alist '(fullscreen . maximized)))
 
 ;;; todo customize modeline
 
@@ -77,8 +89,8 @@
   :custom (uniquify-buffer-name-style 'forward))
 
 (use-package ivy
-  :init
-  (setq enable-recursive-minibuffers t)
+  :custom
+  (enable-recursive-minibuffers t)
   :bind
   (("C-x b" . ivy-switch-buffer))
   :config
@@ -102,8 +114,10 @@
    ("<f2> u" . counsel-unicode-char)))
 
 (use-package company
+  :custom
+  (company-idle-delay nil)
   :config
-  (global-company-mode))
+  (global-company-mode 1))
 
 (use-package projectile
   :ensure t)
@@ -111,8 +125,8 @@
 (use-package treemacs
   :ensure t
   :defer t
-  :init
-  (setq treemacs-indentation 2))
+  :custom
+  (treemacs-indentation 2))
 
 (use-package treemacs-projectile
   :after treemacs projectile
@@ -148,3 +162,26 @@
     ("s" (centaur-tabs-counsel-switch-group))
     ("b" magit-checkout)
     ("q" nil "quit")))
+
+(use-package telega
+  :init
+  (defalias 'tg 'telega-account-switch)
+  :bind
+  ("C-c a" . telega-account-switch)
+  :custom
+  (telega-symbol-heavy-checkmark "☑")
+  (telega-accounts '(("ego" telega-database-dir "~/.telega/ego")
+                     ("pub" telega-database-dir "~/.telega/pub")))
+  :config
+  (defun ignore-zoreen (msg &rest whatever)
+    (when (= (plist-get msg :sender_user_id) 365542142)
+      (telega-msg-ignore msg)))
+  (add-hook 'telega-chat-pre-message-hook 'ignore-zoreen)
+  (global-telega-squash-message-mode 1)
+  (unless window-system
+    (setq telega-use-images nil)))
+
+(use-package jazz-theme
+  :ensure t
+  :config
+  (load-theme 'jazz t))
