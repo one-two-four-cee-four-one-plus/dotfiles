@@ -166,17 +166,23 @@
 (use-package telega
   :init
   (defalias 'tg 'telega-account-switch)
+  (defalias 'tgq 'telega-kill)
   :bind
-  ("C-c a" . telega-account-switch)
+  (("C-c a" . telega-account-switch)
+   ("C-c n" . telega-chatbuf-next-unread))
   :custom
   (telega-symbol-heavy-checkmark "☑")
   (telega-accounts '(("ego" telega-database-dir "~/.telega/ego")
                      ("pub" telega-database-dir "~/.telega/pub")))
   :config
-  (defun ignore-zoreen (msg &rest whatever)
-    (when (= (plist-get msg :sender_user_id) 365542142)
-      (telega-msg-ignore msg)))
-  (add-hook 'telega-chat-pre-message-hook 'ignore-zoreen)
+  (defun advice-filter-history (messages)
+    (seq-doseq (msg messages)
+      (when (= (plist-get msg :sender_user_id) 365542142)
+        (telega-msg-ignore msg))))
+  (advice-add 'telega-chatbuf--append-messages
+              :before #'advice-filter-history)
+  (advice-add 'telega-chatbuf--prepend-messages
+              :before #'advice-filter-history)
   (global-telega-squash-message-mode 1)
   (unless window-system
     (setq telega-use-images nil)))
