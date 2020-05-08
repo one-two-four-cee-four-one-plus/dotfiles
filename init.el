@@ -22,15 +22,18 @@
 (use-package emacs
   :bind
   (("C-x -" . split-window-below)
-   ("C-x |" . split-window-right)))
+   ("C-x |" . split-window-right))
+  :custom
+  (browse-url-generic-program "min")
+  (browse-url-browser-function 'browse-url-generic))
 
 (use-package files
   :ensure nil
   :custom
   (backup-by-copying t)
   (create-lockfiles nil)
-  (backup-directory-alist '(("." . "~/.cache/emacs-backups")))
-  (auto-save-file-name-transforms '((".*" "~/.cache/emacs-backups/" t))))
+  (backup-directory-alist '(("." . "/home/ego/.cache/emacs-backups")))
+  (auto-save-file-name-transforms '((".*" "/home/ego/.cache/emacs-backups/" t))))
 
 (use-package subr
   :no-require t
@@ -169,21 +172,39 @@
   (defalias 'tgq 'telega-kill)
   :bind
   (("C-c a" . telega-account-switch)
-   ("C-c n" . telega-chatbuf-next-unread))
+   ("C-c l" . telega-save-msg-link-to-kill-ring))
   :custom
   (telega-symbol-heavy-checkmark "☑")
-  (telega-accounts '(("ego" telega-database-dir "~/.telega/ego")
-                     ("pub" telega-database-dir "~/.telega/pub")))
+  (telega-accounts '(("ego" telega-database-dir "/home/ego/.telega/ego")
+                     ("pub" telega-database-dir "/home/ego/.telega/pub")))
   :config
-  (defun advice-filter-history (messages)
-    (seq-doseq (msg messages)
-      (when (= (plist-get msg :sender_user_id) 365542142)
+  (defun anti-junk (msg)
+    (let ((id (plist-get msg :sender_user_id)))
+      (when (or (= id 365542142)
+                (= id 646134594))
         (telega-msg-ignore msg))))
+  (defun advice-filter-history (messages)
+    (mapcar #'anti-junk messages))
   (advice-add 'telega-chatbuf--append-messages
               :before #'advice-filter-history)
   (advice-add 'telega-chatbuf--prepend-messages
               :before #'advice-filter-history)
+  (add-hook 'telega-chat-pre-message-hook 'anti-junk)
   (global-telega-squash-message-mode 1)
+  (defun telega-save-msg-link-to-kill-ring ()
+    (interactive)
+    (let* ((msg     (telega-msg-at (point)))
+           (msg-id  (plist-get msg :id))
+           (chat-id (plist-get msg :chat_id))
+           (chat    (telega-chat-get chat-id))
+           (link (ignore-errors
+                   (cond ((telega-chat-public-p chat 'supergroup)
+                            (telega--getPublicMessageLink chat-id msg-id))
+                           ((eq (telega-chat--type chat 'no-interpret) 'supergroup)
+                            (telega--getMessageLink chat-id msg-id))))))
+      (when link
+        (prin1 link)
+        (kill-new link nil))))
   (unless window-system
     (setq telega-use-images nil)))
 
