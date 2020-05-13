@@ -19,13 +19,56 @@
 (require 'use-package)
 (setq use-package-always-ensure t)
 
+(use-package ido
+  :bind
+  ("S-<menu>" . ido-switch-buffer)
+  :custom
+  (ido-enable-flex-matching t)
+  :config
+  (ido-mode))
+
 (use-package emacs
   :bind
   (("C-x -" . split-window-below)
-   ("C-x |" . split-window-right))
+   ("C-x |" . split-window-right)
+   ("C-w" . backward-kill-word-or-region)
+   ("C-u" . backward-kill-line))
   :custom
   (browse-url-generic-program "min")
-  (browse-url-browser-function 'browse-url-generic))
+  (browse-url-browser-function 'browse-url-generic)
+  (scroll-conservatively 50)
+  (scroll-preserve-screen-position 't)
+  (scroll-margin 10)
+  :config
+  ;; (global-unset-key (kbd "<left>"))
+  ;; (global-unset-key (kbd "<right>"))
+  ;; (global-unset-key (kbd "<up>"))
+  ;; (global-unset-key (kbd "<down>"))
+  ;; (global-unset-key (kbd "M-x"))
+  ;; (global-unset-key (kbd "C-x b"))
+  (define-key key-translation-map [?\C-h] [?\C-?])
+  (add-hook 'after-save-hook 'delete-trailing-whitespace)
+  (setq-default indent-tabs-mode nil)
+  (menu-bar-mode -1)
+  (when window-system
+    (tool-bar-mode -1)
+    (scroll-bar-mode -1)
+    (blink-cursor-mode 0))
+  (defun backward-kill-word-or-region (&optional count)
+    (interactive "p")
+    (if (use-region-p)
+        (kill-region (region-beginning) (region-end))
+      (backward-kill-word count)))
+  (defun backward-kill-line (&optional arg)
+    (interactive "p")
+    (if (bolp)
+        (delete-char -1 :kill)
+      (kill-line (- (or arg 0)))))
+  (defun sudo ()
+    (interactive)
+    (when buffer-file-name
+      (find-alternate-file (concat "/sudo:root@localhost:"
+                                   buffer-file-name)))))
 
 (use-package files
   :ensure nil
@@ -41,8 +84,6 @@
   :init
   (fset 'yes-or-no-p 'y-or-n-p))
 
-(setq-default indent-tabs-mode nil)
-
 (use-package cus-edit
   :ensure nil
   :custom
@@ -50,13 +91,9 @@
   :init
   (load custom-file :noerror))
 
-(defvar disabled-commands (expand-file-name ".disabled.el" user-emacs-directory)
-  "File to store disabled commands, that were enabled permamently.")
-(defadvice en/disable-command (around put-in-custom-file activate)
-  "Put declarations in disabled.el."
-  (let ((user-init-file disabled-commands))
-    ad-do-it))
-(load disabled-commands :noerror)
+(use-package eshell
+  :hook
+  (eshell . (lambda () (scroll-margin 10))))
 
 (use-package startup
   :no-require t
@@ -65,39 +102,25 @@
   (initial-major-mode 'fundamental-mode)
   (initial-scratch-message ""))
 
-(use-package startup
-  :no-require t
-  :ensure nil
+(use-package reverse-im
+  :ensure t
   :custom
-  (inhibit-splash-screen t))
-
-(menu-bar-mode -1)
-(when window-system
-  (tool-bar-mode -1)
-  (scroll-bar-mode -1)
-  (blink-cursor-mode 0)
-  (set-face-attribute 'default t 
-                      :family "monofur"
-                      :foundry "unknown"
-                      :slant 'normal
-                      :weight 'normal
-                      :height 100
-                      :width 'normal)
-  (add-to-list 'default-frame-alist '(fullscreen . maximized)))
-
-;;; todo customize modeline
+  (reverse-im-input-methods '("russian-computer"))
+  :config
+  (reverse-im-mode t))
 
 (use-package uniquify
   :ensure nil
   :custom (uniquify-buffer-name-style 'forward))
 
-(use-package ivy
-  :custom
-  (enable-recursive-minibuffers t)
-  :bind
-  (("C-x b" . ivy-switch-buffer))
-  :config
-  (ivy-mode 1))
+;; (use-package ivy
+;;   :ensure t
+;;   :custom
+;;   (enable-recursive-minibuffers t)
+;;   :bind
+;;   (("S-<menu>" . ivy-switch-buffer))
+;;   :config
+;;   (ivy-mode 1))
 
 (use-package swiper
   :bind
@@ -107,14 +130,17 @@
   :config
   (smex-initialize)
   :bind
-  (("M-x" . smex)
-   ("M-X" . smex-major-mode-commands)))
+  (("<menu>" . smex)
+   ("M-<menu>" . smex-major-mode-commands)))
 
-(use-package counsel
-  :bind
-  (("C-x C-f" . counsel-find-file)
-   ("C-x d" . counsel-dired)
-   ("<f2> u" . counsel-unicode-char)))
+;; (use-package counsel
+;;   :bind
+;;   (("C-x C-f" . counsel-find-file)
+;;    ("C-x d" . counsel-dired)
+;;    ("<f1> f" . counsel-describe-function)
+;;    ("<f1> v" . counsel-describe-variable)
+;;    ("<f2> u" . counsel-unicode-char)
+;;    ("<f2> i" . counsel-info-lookup-symbol)))
 
 (use-package company
   :custom
@@ -129,7 +155,10 @@
   :ensure t
   :defer t
   :custom
-  (treemacs-indentation 2))
+  (treemacs-indentation 2)
+  (treemacs-width 16)
+  :bind (:map global-map
+              ("C-c t" . treemacs)))
 
 (use-package treemacs-projectile
   :after treemacs projectile
@@ -138,31 +167,19 @@
 (use-package magit
   :ensure t)
 
-(use-package flx)
-
 (use-package undo-tree)
 
 (use-package hydra
-  :bind (("C-h" . hydrant/body))
   :config
-
-  (defun ego--collapse ()
-    (treemacs-select-window)
-    (treemacs-collapse-all-projects))
-
   ;; todo add nesting and more shortcuts
   (defhydra hydrant (:hint nil)
     "
     ^Treemacs^            ^Magit^
     _a_: add project      _b_: checkout
     _r_: remove project
-    _c_: collapse
-    _s_: select
     "
     ("a" treemacs-add-project-to-workspace)
     ("r" treemacs-remove-project-from-workspace)
-    ("c" (ego--collapse))
-    ("s" (centaur-tabs-counsel-switch-group))
     ("b" magit-checkout)
     ("q" nil "quit")))
 
@@ -174,6 +191,7 @@
   (("C-c a" . telega-account-switch)
    ("C-c l" . telega-save-msg-link-to-kill-ring))
   :custom
+  (telega-symbol-underline-bar "·")
   (telega-symbol-heavy-checkmark "☑")
   (telega-accounts '(("ego" telega-database-dir "/home/ego/.telega/ego")
                      ("pub" telega-database-dir "/home/ego/.telega/pub")))
@@ -183,13 +201,7 @@
       (when (or (= id 365542142)
                 (= id 646134594))
         (telega-msg-ignore msg))))
-  (defun advice-filter-history (messages)
-    (mapcar #'anti-junk messages))
-  (advice-add 'telega-chatbuf--append-messages
-              :before #'advice-filter-history)
-  (advice-add 'telega-chatbuf--prepend-messages
-              :before #'advice-filter-history)
-  (add-hook 'telega-chat-pre-message-hook 'anti-junk)
+  (add-hook 'telega-chat-insert-message-hook 'anti-junk)
   (global-telega-squash-message-mode 1)
   (defun telega-save-msg-link-to-kill-ring ()
     (interactive)
@@ -199,16 +211,47 @@
            (chat    (telega-chat-get chat-id))
            (link (ignore-errors
                    (cond ((telega-chat-public-p chat 'supergroup)
-                            (telega--getPublicMessageLink chat-id msg-id))
-                           ((eq (telega-chat--type chat 'no-interpret) 'supergroup)
-                            (telega--getMessageLink chat-id msg-id))))))
+                          (telega--getPublicMessageLink chat-id msg-id))
+                         ((eq (telega-chat--type chat 'no-interpret) 'supergroup)
+                          (telega--getMessageLink chat-id msg-id))))))
       (when link
         (prin1 link)
         (kill-new link nil))))
   (unless window-system
     (setq telega-use-images nil)))
 
-(use-package jazz-theme
-  :ensure t
+(use-package hardcore-mode
   :config
-  (load-theme 'jazz t))
+  (global-hardcore-mode))
+
+;; look
+;(use-package jazz-theme)
+;(use-package majapahit-theme)
+(use-package sublime-themes)
+
+;(load-file "~/.emacs.d/doom-modeline-config.el")
+(load-file "~/.emacs.d/minimalism.el")
+
+(custom-set-faces
+ '(default ((t (:family "Monofur Nerd Font Mono" :foundry "unci" :slant normal :weight normal :height 218 :width normal)))))
+
+;;; language specific
+
+;(use-package flycheck
+                                        ;  :hook python-mode)
+(use-package elpy
+  :config
+  (delete `elpy-module-highlight-indentation elpy-modules))
+
+;;js
+(use-package js2-mode
+  :config
+  (add-to-list 'interpreter-mode-alist '("node" . js2-mode))
+  (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode)))
+
+;;py
+(use-package elpy)
+(use-package virtualenvwrapper
+  :config
+  (venv-initialize-interactive-shells)
+  (venv-initialize-eshell))
