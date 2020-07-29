@@ -54,6 +54,9 @@ function __fish_status_to_signal
     end
 end
 
+set fish_color_search_match white
+set fish_color_param white
+
 function fish_prompt
 
     set -l last_pipestatus $pipestatus
