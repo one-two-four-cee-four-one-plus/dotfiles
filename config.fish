@@ -65,7 +65,7 @@ function fish_prompt
     set -l normal (set_color normal)
     set -l grey (set_color a9a9a9)
 
-    printf '((%s%s%s' (set_color ffb3de) (whoami) $normal
+    printf '((%s%s%s' (set_color purple) (whoami) $normal
     printf '@'
     printf '%s%s:%s%s))' (set_color a9a9a9) (hostname) (prompt_pwd) $normal
 
@@ -92,7 +92,7 @@ function fish_prompt
         if test -z $text_status
             set text_status "?"
         end
-        
+
         printf " %s(%s%s:%s%s%s%s)%s" $grey (set_color 8b0000) $status_type $col $text_status $normal $grey $normal
     end
 
@@ -118,7 +118,41 @@ function ipy
 end
 
 function umacs
-    emacs -q -nl -nsl --no-splash --eval "(menu-bar-mode -1)" $argv
+    emacs -q -nw -nl -nsl --no-splash \
+          --eval "(menu-bar-mode -1)" \
+          --eval "(setq-default mode-line-format nil) "\
+          $argv
 end
 
-set -gx PATH ~/.local/bin $PATH
+function dired
+    emacs -q -nw -nl -nsl --no-splash \
+          --eval "(load-file \"~/dotfiles/standalones/dired.el\")"
+end
+
+function magit
+    emacs -q -nw -nl -nsl --no-splash \
+          --eval "(load-file \"~/dotfiles/standalones/magit.el\")"
+end
+
+function fzf
+    fzf-tmux
+end
+
+function to-clip
+    xclip -selection clipboard
+end
+
+function sbcl
+    rlwrap sbcl $argv
+end
+
+function kek
+    kak $argv
+end
+
+function gdb
+    PYTHONWARNINGS="ignore" command gdb -q $argv
+end
+
+set -gx PATH ~/.local/bin ~/.cargo/bin ~/.go/bin ~/.node_modules/bin $PATH
+set -gx GOPATH ~/.go

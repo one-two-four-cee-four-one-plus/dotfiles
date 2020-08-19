@@ -1,0 +1,53 @@
+evaluate-commands %sh{
+  plugins="$HOME/.config/kak/plugins"
+  mkdir -p $plugins
+  [ ! -e "$plugins/plug.kak" ] && \
+  git clone -q https://gitlab.com/andreyorst/plug.kak.git "$plugins/plug.kak"
+  printf "%s\n" "source '$plugins/plug.kak/rc/plug.kak'"
+}
+
+plug "andreyorst/plug.kak" domain gitlab.com noload config %{
+  set-option global plug_always_ensure true
+  set-option global plug_profile true
+}
+
+plug "chambln/kakoune-readline" config %{
+  map global insert <tab> <c-n>
+  map global insert <s-tab> <c-p>
+  map global insert <c-p> <up>
+  map global insert <c-n> <down>
+  hook global WinCreate .* readline-enable
+}
+
+plug "danr/kakoune-easymotion" config %{
+  set-face global EasyMotionBackground grey
+  map global normal e ':enter-user-mode easymotion<ret>'
+  
+  unmap global easymotion f
+  unmap global easymotion w
+  unmap global easymotion W
+  unmap global easymotion j
+  unmap global easymotion <a-f>
+  unmap global easymotion q
+  unmap global easymotion Q
+  unmap global easymotion k
+
+  map global easymotion l ': easy-motion-line<ret>' -docstring '→  line'  
+  map global easymotion w ': easy-motion-WORD<ret>' -docstring '→  word'
+}
+
+# user prefix
+map global normal <space> ,
+map global normal , <space>
+
+# assistant
+set-option global ui_options ncurses_assistant=cat
+
+# macro definitions
+map global normal <F3> Q
+unmap global normal Q
+map global normal <F4> q
+unmap global normal q
+
+# no viewlock
+unmap global normal V

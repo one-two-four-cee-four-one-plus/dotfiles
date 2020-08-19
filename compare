@@ -13,7 +13,7 @@ compare() {
 }
 compare ~/.config/fish/config.fish config.fish
 compare ~/.tmux.conf dot-tmux.conf
-compare ~/.vimrc dot-vimrc
+compare ~/.config/kak/kakrc dot-kakrc
 compare ~/.local/bin/microlab dot-local/bin/microlab
 compare ~/.local/lib/micro-jupyter-lab dot-local/lib/micro-jupyter-lab
 compare ~/.emacs.d/init.el init.el

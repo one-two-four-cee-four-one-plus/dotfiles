@@ -18,12 +18,17 @@
 (require 'use-package)
 (setq use-package-always-ensure t)
 
+(use-package frog-jump-buffer
+  :ensure t
+  :custom
+  (frog-jump-buffer-include-current-buffer . nil)
+  :bind (:map global-map
+              (("<S-menu>" . frog-jump-buffer)
+               ("C-x b"    . frog-jump-buffer))))
+
 (use-package ido
   :ensure t
   :defer nil
-  :bind
-  (("<s-menu>" . ido-switch-buffer)
-   ("C-x b"    . ido-switch-buffer))
   :custom
   (ido-enable-flex-matching t)
   :config
@@ -48,7 +53,7 @@
    ("C-a"    . smarter-move-beginning-of-line))
   :hook (find-file . fancy-scrolling-mode)
   :custom
-  (browse-url-generic-program "min")
+  (browse-url-generic-program "chromium")
   (browse-url-browser-function 'browse-url-generic)
   :config
   (defadvice kill-ring-save (before slick-copy activate compile)
@@ -206,8 +211,8 @@
 (use-package company
   :custom
   (company-idle-delay nil)
-  ;(company-minimum-prefix-length 100)
-  ;(company-frontends '(my-company-frontend))
+  ;; (company-minimum-prefix-length 100)
+  ;; (company-frontends '(my-company-frontend))
   :bind (:map global-map
               ("<M-tab>" . company-complete))
   :config
@@ -262,7 +267,8 @@
          :map telega-root-mode-map
               ("C-c a" . telega-account-switch)
               ("C-c q" . telega-kill))
-    :custom
+  :custom
+  ;; (telega-chat-use-markdown-version 2)
   (telega-symbol-underline-bar "=")
   (telega-symbol-heavy-checkmark "☑")
   (telega-accounts '(("ego" telega-database-dir "/home/ego/.telega/ego")
@@ -402,3 +408,21 @@
   :after restclient
   :config
   (add-to-list 'company-backends 'company-restclient))
+
+;; bin
+(use-package hexl
+  :ensure nil
+  :bind (:map hexl-mode-map
+              ("C-c o" . hexl-insert-octal-char)
+              ("C-c x" . hexl-insert-hex-char)
+              ("C-c d" . hexl-insert-decimal-char)
+              ("C-c j" . hexl-goto-hex-address)))
+
+;; clisp
+(use-package sly
+  :bind (:map sly-mode-map
+              ("C-c h" . sly-documentation-lookup)
+              ("C-c a" . sly-apropos-all)
+              ("C-c e" . sly-expand-1)
+              ("C-c d" . sly-disassemble-symbol)
+              ("C-c C-e" . sly-eval-last-expression)))
